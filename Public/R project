@@ -1,0 +1,433 @@
+#Projet 1
+
+library(xlsx)
+
+ESPERANCE <- read_excel("données.xlsx")
+View(ESPERANCE)
+
+
+#Esperance, taux de fertilit? et continent en lien 
+#On s'int?resse ? 26 pays de 4 continents (Afrique, Asie, Am?rique et Europe)
+
+
+pays = ESPERANCE $PAYS
+esperance = ESPERANCE $ESPNAISSANCE
+taux_ferti = ESPERANCE $TFECON
+PIB  = ESPERANCE $PIB
+DEPENSES = ESPERANCE $`DEPENSESANTE%PIB`
+MORTAINF = ESPERANCE $MORTALITEINF
+TAUXURB = ESPERANCE $TAUXURBA
+GINI = ESPERANCE $GINI
+
+
+
+#On commence par s'int?resser ? l'esperance 
+
+
+paysEU = pays[which(ESPERANCE $CONTINENT == 'EU')]
+paysAME = pays[which(ESPERANCE $CONTINENT == 'AM')]
+paysAFR = pays[which(ESPERANCE $CONTINENT == 'AFR')]
+paysASI = pays[which(ESPERANCE $CONTINENT == 'ASI')]
+esperanceEU = esperance[which (ESPERANCE $CONTINENT == "EU")]   #Vecteur contenant les esperances de vie en Europe
+esperanceAFR = esperance[which (ESPERANCE $CONTINENT == "AFR")] #Vecteur contenant les esperances de vie en Afrique
+esperanceAME = esperance[which (ESPERANCE $CONTINENT == "AM")] #Vecteur contenant les esperances de vie en Amerique
+esperanceASIE = esperance[which (ESPERANCE $CONTINENT == "ASI")] #Vecteur contenant les esperances de vie en Asie
+
+
+#Description des donn?es d'Esperance
+
+summary(esperance)
+hist(esperance, ylab = 'Fr?quence', col = 'pink')
+boxplot(esperance, main = "Boite ? moustache de l'esperance de vie moyenne des femmes", ylab = 'Esperance moyenne')
+
+#Comparaison entre diff?rents continents 
+
+par(mfrow = c(2,2))
+
+summary(esperanceAFR)
+summary(esperanceAME)
+summary(esperanceASIE)
+summary(esperanceEU)
+
+hist(esperanceEU, main = "Esperance de vie en Europe", col = 'pink', xlab = 'Esperance', ylab = 'Fr?quence')
+box()
+hist(esperanceAME, main = "Esperance de vie en Amerique", col = 'pink4', xlab = 'Esperance', ylab = 'Fr?quence')
+box()
+hist(esperanceAFR, main = "Esperance de vie en Afrique", col= '#CC0099', xlab = 'Esperance', ylab = 'Fr?quence')
+box()
+hist(esperanceASIE, main = "Esperance de vie en Asie", col = 'brown4', xlab = 'Esperance', ylab = 'Fr?quence')
+box()
+
+barplot(esperanceEU,col= c('#CC66FF', '#CC33FF', '#9900CC'), ylab = 'Esperance de vie des femmes ? la naissance', main = 'Esperance de vie des femmes en Europe', names.arg = paysEU, ylim = c(0,max(esperance)), cex.names = 1, cex.axis = 1, las = 2) 
+box()
+barplot(esperanceAME,col= c('#CC66FF', '#CC33FF', '#9900CC'), ylab = 'Esperance de vie des femmes ? la naissance', main = 'Esperance de vie des femmes en Amerique', names.arg = paysAME, ylim = c(0,max(esperance)), cex.names = 1, cex.axis = 1, las = 2) 
+box()
+barplot(esperanceAFR,col= c('#CC66FF', '#CC33FF', '#9900CC'), ylab = 'Esperance de vie des femmes ? la naissance', main = 'Esperance de vie des femmes en Afrique', names.arg = paysAFR, ylim = c(0,max(esperance)), cex.names = 1, cex.axis = 1, las = 2) 
+box()
+barplot(esperanceASIE,col= c('#CC66FF', '#CC33FF', '#9900CC'), ylab = 'Esperance de vie des femmes ? la naissance', main = 'Esperance de vie des femmes en Asie', names.arg = paysASI, ylim = c(0,max(esperance)), cex.names = 1, cex.axis = 1, las = 2) 
+box()
+
+#On va tracer un diagramme en barre, representant l'esperance moyenne selon les continents
+
+esperancebarre = c(mean(esperanceEU), mean(esperanceAME), mean(esperanceAFR), mean(esperanceASIE)) #moyenne en fonction des continents
+esperancemedian = c(median(esperanceEU), median(esperanceAME), median(esperanceAFR), median(esperanceASIE)) #mediane en fonction des continents
+
+
+noms_barres <- c('Europe', 'Amerique', 'Afrique', 'Asie')
+barplot(esperancebarre,col= 'pink4',space=2, ylab = 'Esperance de vie moyenne',xlab = 'Continent', main = 'Esperance de vie des femmes selon les continents', names.arg = noms_barres, ylim = c(0,max(esperance)))
+box()
+
+#On va refaire un diagramme en baton, cette fois-ci avec l'esperance moyenne et la mediane de chaque continent pour pouvoir comparer
+
+matric =  rbind(esperancebarre, esperancemedian)
+barplot(matric, beside = TRUE,legend.text = c('Moyenne', 'M?diane'), main = "Esperande de vie moyenne et mediane", ylab = "Esperance", xlab = "Continent", names.arg = noms_barres , ylim = c(0, max(esperance)+7), col = c('pink4', 'brown4'))
+box()
+
+#globalement moyenne  a peu pr?s ?gale ? la moyenne
+
+espsup75 = esperance [which(ESPERANCE $ESPNAISSANCE > 75 )]
+espAM75 = esperance[which(ESPERANCE $CONTINENT== "AM" & ESPERANCE $ESPNAISSANCE > 75)]
+espAFR75= esperance[which(ESPERANCE $CONTINENT== "AFR" & ESPERANCE $ESPNAISSANCE > 75)]
+espASI75 = esperance[which(ESPERANCE $CONTINENT== "ASI" & ESPERANCE $ESPNAISSANCE > 75)]
+espEU75 = esperance[which(ESPERANCE $CONTINENT== "EU" & ESPERANCE $ESPNAISSANCE > 75)]
+
+n = length(espsup75)
+x = c(length(espAFR75)/n, length(espAM75)/n, length(espASI75)/n, length(espEU75)/n)
+
+text_pie = function(vector,labels=c()) {
+  vector = vector/sum(vector)*2*pi
+  temp = c()
+  j = 0
+  l = 0
+  for (i in 1:length(vector)) {
+    k = vector[i]/2        
+    j =  j+l+k
+    l = k
+    text(cos(j)/2,sin(j)/2,labels[i])
+  }
+  vector = temp
+}
+
+pie(x, main = "POURCENTAGE DES PAYS AYANT UNE ESPERANCE SUPERIEUR A 75ANS SELON LES CONTINENTS", col = c('#FFCCFF', '#9966CC', '#FF00FF','#CC33CC' ), labels = '')
+text_pie(x,c('AFRIQUE', 'AMERIQUE', 'ASIE', 'EUROPE')) 
+box()
+#Camembert proportion pays ayant esp vie > 75 ans
+#Europe en majorit?(tout les pays ont une esp > 75), suivi de l'Amerique et de l'Asie de tr?s pr?s, Seule 4 pays africain ont une esperance de vie sup?rieur ? 75 ans pour les femmes
+
+#On refait > 80 ans
+
+#On peut refaire la m?me chose avec une esperance sup?rieur ? 60ans. 
+
+espsup60 = esperance [which(ESPERANCE $ESPNAISSANCE > 60 )]
+espAM60 = esperance[which(ESPERANCE $CONTINENT== "AM" & ESPERANCE $ESPNAISSANCE > 60)]
+espAFR60= esperance[which(ESPERANCE $CONTINENT== "AFR" & ESPERANCE $ESPNAISSANCE > 60)]
+espASI60 = esperance[which(ESPERANCE $CONTINENT== "ASI" & ESPERANCE $ESPNAISSANCE > 60)]
+espEU60 = esperance[which(ESPERANCE $CONTINENT== "EU" & ESPERANCE $ESPNAISSANCE > 60)]
+m= length(espsup60)
+
+y = c(length(espAFR60)/m, length(espAM60)/m, length(espASI60)/m, length(espEU60)/m)
+pie(y, main = "POURCENTAGE DES PAYS AYANT UNE ESPERANCE SUPERIEUR A 60ANS SELON LES CONTINENTS", col = c('#FFCCFF', '#9966CC', '#FF00FF','#CC33CC' ), labels = '')
+text_pie(y,c('AFRIQUE', 'AMERIQUE', 'ASIE', 'EUROPE')) 
+box()
+
+#Dans ce cas, on retrouve le m?me nombre de pays Am?ricains, Asiatiques et Europ?ens. Le nombre de pays Africain n'est pas tr?s loin
+#On essaie sur 80ans 
+
+espsup80 = esperance [which(ESPERANCE $ESPNAISSANCE > 80 )]
+espAM80 = esperance[which(ESPERANCE $CONTINENT== "AM" & ESPERANCE $ESPNAISSANCE > 80)]
+espAFR80= esperance[which(ESPERANCE $CONTINENT== "AFR" & ESPERANCE $ESPNAISSANCE > 80)]
+espASI80 = esperance[which(ESPERANCE $CONTINENT== "ASI" & ESPERANCE $ESPNAISSANCE > 80)]
+espEU80 = esperance[which(ESPERANCE $CONTINENT== "EU" & ESPERANCE $ESPNAISSANCE > 80)]
+p = length(espsup80)
+
+z = c(length(espAFR80)/p, length(espAM80)/p, length(espASI80)/p, length(espEU80)/p)
+pie(z, main = "POURCENTAGE DES PAYS AYANT UNE ESPERANCE SUPERIEUR A 80ANS SELON LES CONTINENTS", col = c('#FFCCFF', '#9966CC', '#FF00FF','#CC33CC' ), labels = '')
+text_pie(z,c( '', 'AMERIQUE', 'ASIE', 'EUROPE')) 
+box()
+#Large majorit? de l'europe (23/26 PAYS ). Absence de l'Afrique. 
+
+#Esperance a peu pr?s ?gale ? la mediane -> esperance ~ Normale ?
+
+hist(esperance, main = "Esperance des femmes dans le monde", prob = TRUE)
+curve(dnorm(x, mean(esperance), sd(esperance)), add = TRUE, col = 'purple')
+ks.test(esperance, "pnorm", mean(esperance), sd(esperance) ) 
+#p-value = 0.07808 = 7.808% > 5%, suit loi normale
+
+#Si esperance au niveau continentale suit ?galement une loi normale 
+
+par(mfrow = c(2,2))
+hist(esperanceEU, main = "Esperance de vie en Europe", prob = TRUE)
+curve(dnorm(x, mean(esperanceEU), sd(esperanceEU)), add = TRUE, col = 'purple')
+hist(esperanceAME, main = "Esperance de vie en Amerique")
+curve(dnorm(x, mean(esperanceAME), sd(esperanceAME)), add = TRUE, col = 'purple')
+hist(esperanceAFR, main = "Esperance de vie en Afrique")
+curve(dnorm(x, mean(esperanceAFR), sd(esperanceAFR)), add = TRUE, col = 'purple')
+hist(esperanceASIE, main = "Esperance de vie en Asie")
+curve(dnorm(x, mean(esperanceASIE), sd(esperanceASIE)), add = TRUE, col = 'purple')
+
+#Mise a part le dessin pour l'Europe, on ne peut faire d'hypoth?se pour les autres
+#Faison un ks.test pour chaque continent 
+
+ks.test(esperanceEU, "pnorm", mean(esperanceEU), sd(esperanceEU) )
+#p-value = 0.3764 = 37.64%
+ks.test(esperanceAFR, "pnorm", mean(esperanceAFR), sd(esperanceAFR) )
+#p-value = 0.9476 = 94.76%
+ks.test(esperanceASIE, "pnorm", mean(esperanceASIE), sd(esperanceASIE) )
+#p-value = 0.8786 = 87.86%
+ks.test(esperanceAME, "pnorm", mean(esperanceAME), sd(esperanceAME) )
+#p-value = 0.9011 = 90.11%
+
+#Tous semble suivre une loi normale
+
+#Amene ? penser, on vit plus ou moins longtemps en fonction du continent
+#Test du khi2 pour savoir si continent et esperance de vie sont li?
+
+esp_quali = cut(esperance, breaks = quantile(esperance), labels = c('Basse', 'Moyenne basse','Moyenne elev?e', 'Elev?e' ), include.lowest = TRUE)
+r= table(esp_quali, ESPERANCE $CONTINENT)
+#! tableau comporte des 0
+
+q = chisq.test(r) #p-value < 5%, on rejette l'ind?pendance
+
+
+#On s'interesse ici aux taux de fertilit?
+
+taux_fertiEU= taux_ferti[which(ESPERANCE $CONTINENT == "EU")]
+taux_fertiAFR= taux_ferti[which(ESPERANCE $CONTINENT == "AFR")]
+taux_fertiAM= taux_ferti[which(ESPERANCE $CONTINENT == "AM")]
+taux_fertiASIE= taux_ferti[which(ESPERANCE $CONTINENT == "ASI")]
+
+#Description des donn?es
+
+summary(taux_ferti)
+hist(taux_ferti)
+boxplot(taux_ferti)
+
+#Comparaison entre les diff?rents continents
+
+summary(taux_fertiAFR)
+summary(taux_fertiAM)
+summary(taux_fertiASIE)
+summary(taux_fertiEU)
+
+par(mfrow = c(2,2))
+hist(taux_fertiEU, main = "Taux de fertilit? en Europe", col = 'pink', xlab = 'Taux de fertilit?', ylab = 'Fr?quence')
+box()
+hist(taux_fertiAFR, main = "Taux de fertilit? en Afrique", col ='#CC0099', xlab = 'Taux de fertilit?', ylab = 'Fr?quence')
+box()
+hist(taux_fertiAM, main = "Taux de fertilit? en Amerique", col = 'pink4', xlab = 'Taux de fertilit?', ylab = 'Fr?quence')
+box()
+hist(taux_fertiASIE, main = "Taux de fertilit? en Asie", col = 'brown4', xlab = 'Taux de fertilit?', ylab = 'Fr?quence')
+box()
+
+barplot(taux_fertiEU,col= c('#CC66FF', '#CC33FF', '#9900CC'), ylab = 'Taux de f?condit?', main = 'Taux de f?condit? en Europe', names.arg = paysEU, ylim = c(0,max(taux_ferti)), cex.names = 1, cex.axis = 1, las = 2) 
+box()
+barplot(taux_fertiAM,col= c('#CC66FF', '#CC33FF', '#9900CC'), ylab = 'Taux de f?condit?', main = 'Taux de f?condit? en Amerique', names.arg = paysAME, ylim = c(0,max(taux_ferti)), cex.names = 1, cex.axis = 1, las = 2) 
+box()
+barplot(taux_fertiAFR,col= c('#CC66FF', '#CC33FF', '#9900CC'), ylab = 'Taux de f?condit?', main = 'Taux de f?condit? en Afrique', names.arg = paysAFR, ylim = c(0,max(taux_ferti)), cex.names = 1, cex.axis = 1, las = 2) 
+box()
+barplot(taux_fertiASIE,col= c('#CC66FF', '#CC33FF', '#9900CC'), ylab = 'Taux de f?condit?', main = 'Taux de f?condit? en Asie', names.arg = paysASI, ylim = c(0,max(taux_ferti)), cex.names = 1, cex.axis = 1, las = 2) 
+box()
+
+#semble ?tre le plus haut en Afrique et le plus bas en Europe
+#In?galitaire en Afrique et Asie, plut?t egalitaire en Europe et en Amerique
+
+
+taux_fertibarre = c(mean(taux_fertiEU), mean(taux_fertiAFR), mean(taux_fertiAM), mean(taux_fertiASIE))
+taux_fertimedian = c(median(taux_fertiEU), median(taux_fertiAFR), median(taux_fertiAM), median(taux_fertiASIE))
+barplot(taux_fertibarre, beside = TRUE, main = "Taux de fecondit? moyen", ylab = "Taux de fecondit?", xlab = "Continent", names.arg = noms_barres2 , ylim = c(0, max(taux_ferti)) )
+noms_barres2 <- c('Europe', 'Afrique', 'Amerique', 'Asie')
+matrix =  rbind(taux_fertibarre, taux_fertimedian)
+barplot(matrix, beside = TRUE,legend.text = c('Moyenne', 'M?diane'), main = "Taux de fecondit? moyenne et mediane", ylab = "Taux de fertilit?", xlab = "Continent", names.arg = noms_barres2 , ylim = c(0, max(taux_ferti)))
+
+#globalement moyenne  a peu pr?s ?gale ? la moyenne
+#Afrique surpasse autres continent 
+
+#Voyons proportion taux de fertilit? > 2 ou <= 2
+
+taux_inf2 = taux_ferti [which(ESPERANCE $TFECON <= 2 )]
+taux_fertiAMi2 = taux_ferti[which(ESPERANCE $CONTINENT== "AM" & ESPERANCE $TFECON <= 2)]
+taux_fertiAFRi2= taux_ferti[which(ESPERANCE $CONTINENT== "AFR" & ESPERANCE $TFECON <= 2)]
+taux_fertiASIi2 = taux_ferti[which(ESPERANCE $CONTINENT== "ASI" & ESPERANCE $TFECON <= 2)]
+taux_fertiEUi2 = taux_ferti[which(ESPERANCE $CONTINENT== "EU" & ESPERANCE $TFECON <= 2)]
+
+l = length(taux_inf2)
+w = c(length(taux_fertiAFRi2)/l, length(taux_fertiAMi2 )/l, length(taux_fertiASIi2)/l, length(taux_fertiEUi2)/l)
+pie(w, main = "PORTIONS DES PAYS AYANT UN TAUX DE FECONDITE INFERIEUR A 2", col = c('#FFCCFF', '#9966CC', '#FF00FF','#CC33CC'  ), labels = '')
+text_pie(w,c('', 'AMERIQUE', 'ASIE', 'EUROPE')) 
+box()
+
+#Aucun pays d'Afrique pr?sent
+
+taux_sup2 = taux_ferti [which(ESPERANCE $TFECON > 2 )]
+taux_fertiAMs2 = taux_ferti[which(ESPERANCE $CONTINENT== "AM" & ESPERANCE $TFECON >2)]
+taux_fertiAFRs2= taux_ferti[which(ESPERANCE $CONTINENT== "AFR" & ESPERANCE $TFECON > 2)]
+taux_fertiASIs2 = taux_ferti[which(ESPERANCE $CONTINENT== "ASI" & ESPERANCE $TFECON > 2)]
+taux_fertiEUs2 = taux_ferti[which(ESPERANCE $CONTINENT== "EU" & ESPERANCE $TFECON >2)]
+
+k = length(taux_sup2)
+v = c(length(taux_fertiAFRs2)/k, length(taux_fertiAMs2 )/k, length(taux_fertiASIs2)/k, length(taux_fertiEUs2)/k)
+pie(v, main = "PORTIONS DES PAYS AYANT UN TAUX DE FECONDITE SUPERIEUR A 2", col = c('#FFCCFF', '#9966CC', '#FF00FF','#CC33CC' ), labels = '')
+text_pie(v,c('AFRIQUE', 'AMERIQUE', 'ASIE', 'EUROPE')) 
+box()
+
+#Grande pr?sence de l'Afrique, peu de pays d'Europe
+
+#Taux de f?condit? et loi normale
+
+
+hist(taux_ferti, main = "Taux de fecondite dans le monde", prob = TRUE)
+curve(dnorm(x, mean(taux_ferti), sd(taux_ferti)), add = TRUE, col = 'purple')
+ks.test(taux_ferti, "pnorm", mean(taux_ferti), sd(taux_ferti) ) 
+#p-value = 0.0001337 = 0.01337% < 5%, On rejette l'hypoth?se de loi normale
+
+#On va se placer d'un point de vue continentale 
+
+par(mfrow = c(2,2))
+hist(taux_fertiEU, main = "Taux de Fecondite en Europe", prob = TRUE)
+curve(dnorm(x, mean(taux_fertiEU), sd(taux_fertiEU)), add = TRUE, col = 'purple')
+hist(taux_fertiAM, main = "Taux de Fecondite en Amerique")
+curve(dnorm(x, mean(taux_fertiAM), sd(taux_fertiAM)), add = TRUE, col = 'purple')
+hist(taux_fertiAFR, main = "Taux de Fecondite en Afrique")
+curve(dnorm(x, mean(taux_fertiAFR), sd(taux_fertiAFR)), add = TRUE, col = 'purple')
+hist(esperanceASIE, main = "Taux de Fecondite en Asie")
+curve(dnorm(x, mean(taux_fertiASIE), sd(taux_fertiASIE)), add = TRUE, col = 'purple')
+
+#Aucune ne semble suivre une loi normale
+#Effectuons des ks.test sur chacun de ces vecteurs
+
+ks.test(taux_fertiEU, "pnorm", mean(taux_fertiEU), sd(taux_fertiEU) )
+#p-value = 0.9951 = 99.51%
+ks.test(taux_fertiAFR, "pnorm", mean(taux_fertiAFR), sd(taux_fertiAFR) )
+#p-value = 0.9347 = 93.47%
+ks.test(taux_fertiASIE, "pnorm", mean(taux_fertiASIE), sd(taux_fertiASIE) )
+#p-value = 0.4407 = 44.07%
+ks.test(taux_fertiAM, "pnorm", mean(taux_fertiAM), sd(taux_fertiAM) )
+#p-value = 0.7779 = 77.79%
+
+#Le taux de fecondite ? l'echelle continentale semble suivre une loi normale 
+#Taux de fecondite depend du continent ? test du khi2
+
+
+tauxferti_quali = cut(taux_ferti, breaks = quantile(taux_ferti), labels = c('Bas', 'Moyen bas','Moyen elev?', 'Elev?' ), include.lowest = TRUE)
+s  =  table(tauxferti_quali, ESPERANCE $CONTINENT)
+
+b = chisq.test(s) 
+#p-value < 5%, on rejette l'ind?pendance
+
+#Taux de fecondite et Esperance semble ?tre dependant du continent, mais existe-t-il un lien entre les deux ?
+
+
+#On va transformer le taux de fecondit? et l'esperance en donn? qualitative pour pouvoir les comaparer
+
+r = table(esp_quali, tauxferti_quali)
+t =chisq.test(r)
+#p-value < 5% donc les deux sont d?pendant l'un de l'autre 
+
+
+
+#Tra?ons le taux de fertilit? en fonction de l'esperance
+
+plot(esperance,taux_ferti, main = "Taux de fecondit? en fonction de l'esperance", ylab = "Taux de f?condit?", xlab = "Esperance")
+plot(taux_ferti,esperance, main = "Esperance en fonction du taux de fecondit?", ylab = "Esperance", xlab = "Taux de f?condit?")
+
+#Au vue du dessin, il semvble y avoir une d?pendane lin?aire negative
+
+#Calculons le coeff de correlation 
+
+cor(esperance, taux_ferti) # diff de 0 donc il y a relation lineraire
+cor(esperance, taux_ferti, method = c("spearman"))
+cor.test(esperance, taux_ferti)
+#Si la p-value est inf?rieure ? 5%, la corr?lation est dite significative.
+lm(formula = taux_ferti ~ esperance) #On calcule ordonn? ? l'origine et coeff associ?
+h = summary(lm( taux_ferti ~ esperance))
+
+abline(reg, col="red")
+
+#Regression multiple
+
+summary(PIB)
+summary(TAUXURB)
+summary(DEPENSES)
+summary(MORTAINF)
+summary(GINI)
+
+GINI[is.na(GINI)] <- 0
+#On transforme les valeurs manquantes en 0
+
+
+#Zoom sur l'Afrique
+
+PIB_afr = PIB[which(ESPERANCE $CONTINENT == 'AFR')]
+hist((PIB_afr),breaks=15,col="red",density=5,xlab="PIB en Afrique",ylab="Fr?quences",main="Histogramme du PIB")
+
+TAUXURB_afr = TAUXURB[which(ESPERANCE $CONTINENT == 'AFR')]
+hist((TAUXURB_afr),breaks=15,col="red",density=5,xlab="Taux d'Urbanisation en Afrique",ylab="Fr?quences",main="Histogramme du Taux d'Urbanisation")
+
+DEPENSES_afr = DEPENSES[which(ESPERANCE $CONTINENT == 'AFR')]
+hist((DEPENSES_afr),breaks=15,col="red",density=5,xlab="Depenses en sant? en % du PIB en Afrique",ylab="Fr?quences",main="Histogramme des depenses en sant?")
+
+MORTAINF_afr = MORTAINF[which(ESPERANCE $CONTINENT == 'AFR')]
+hist((MORTAINF_afr),breaks=15,col="red",density=5,xlab="Mortalit? infantile sur 1000 naissances en Afrique",ylab="Fr?quences",main="Histogramme de la mortalit? infantile")
+
+GINI_afr = GINI[which(ESPERANCE $CONTINENT == 'AFR')]
+hist((GINI_afr),breaks=15,col="red",density=5,xlab="Inegalit?s en Afrique (Coefficient de Gini)",ylab="Fr?quences",main="Histogramme des in?galit?s")
+
+#Coeff Gini selon les pays d'Afrique
+
+barplot(GINI_afr,col= c('#CC66FF', '#CC33FF', '#9900CC'), ylab = 'In?galit?s en Afrique (Coefficient de Gini)', main = 'In?galit?s en Afrique (Coefficient de Gini)', names.arg = paysAFR, ylim = c(0,max(GINI)), cex.names = 1, cex.axis = 1, las = 2) 
+box()
+
+#Realisons la matrice de correlation
+
+
+B <- na.omit(ESPERANCE)
+
+
+esper_without_NA = B $ESPNAISSANCE
+taux_ferti_without_NA = B $TFECON
+PIB_without_NA = B$PIB
+TAUXURB_without_NA = B$TAUXURBA
+DEPENSES_without_NA = B$`DEPENSESANTE%PIB`
+MORTAINF_without_NA = B$MORTALITEINF
+GINI_without_NA = B$GINI 
+
+
+M=cbind(esper_without_NA,taux_ferti_without_NA,PIB_without_NA,TAUXURB_without_NA,DEPENSES_without_NA,MORTAINF_without_NA, GINI_without_NA)
+r= cor(M)
+
+#La plus correl?: mortalit? infantile, confirmation de dependance avec test du chi-2
+
+
+#Mortalit? infantile et Esperance de vie des femmes
+
+regsimple1 = lm(esperance~MORTAINF)
+plot(MORTAINF,esperance, main = "Esperance de vie des femmes & mortalit? infantile")
+abline(regsimple1, col = 'red')
+
+#Regression multiple
+
+reg = lm(esperance~ taux_ferti + PIB + DEPENSES + MORTAINF + TAUXURB + GINI )
+
+#Cacul du degr?s de pr?cision
+N=length(esperance)
+n1=75
+esperance_prim=esperance[1:n1]
+taux_ferti_prim=taux_ferti[1:n1]
+PIB_prim=PIB[1:n1]
+DEPENSES_prim=DEPENSES[1:n1]
+MORTAINF_prim=MORTAINF[1:n1]
+TAUXURB_prim=TAUXURB[1:n1]
+GINI_prim=GINI[1:n1]
+
+regprim=lm(esperance_prim~taux_ferti_prim + PIB_prim + DEPENSES_prim + MORTAINF_prim + TAUXURB_prim + GINI_prim)
+s=cbind(taux_ferti[(n1+1):N],PIB[(n1+1):N], DEPENSES[(n1+1):N],MORTAINF[(n1+1):N], TAUXURB[(n1+1):N], GINI[(n1+1):N]) 
+new <- na.omit(data.frame(s))
+IC=predict.lm(regprim,newdata=new,interval="prediction",level=0.95,se.fit=TRUE)
+names(new)= c('TFEC', 'PIB', 'DEPENSES', 'MORTAINF', 'TAUXURB', 'GINI')
+
+esperance_a_predire = esperance[n1+1, N]
+errel_predict=abs(esperance_a_predire-IC$fit[,1])/esperance_a_predire
+head(errel_predict)
+
+
+
