@@ -1,0 +1,108 @@
+#Ce fichier regroupe les graphes que l'on a fait. Il suffit de lancer le code et les différents graphes apparaitront
+#Des instructions peuvent vous être demandées 
+#Pour mieux comprendre les différentes étapes et ainsi mieux visualer les graphes qui en ressortent, nous vous conseillons de lancer le code ligne par ligne
+
+
+#Partie 1
+
+import pandas as pd
+import representation as rp
+
+chemin_netflix = str(input("Entrez le chemin qui mene jusqu'au fichier netflix, n'oubliez pas de changer les \ en /, et ne mettez pas de guillemets  "))
+chemin_amazon_prime = str(input("Entrez le chemin qui mene jusqu'au fichier Amazon Prime, n'oubliez pas de changer les \ en /, et ne mettez pas de guillemets   "))
+chemin_disney_plus = str(input("Entrez le chemin qui mene jusqu'au fichier Disney +, n'oubliez pas de changer les \ en /, et ne mettez pas de guillemets   "))
+movies_rating = str(input("Entre le chemin qui mene jusqu'au fichier contenant les notes des films, n'oubliez pas de changer les \ en /, et ne mettez pas de guillemets   "))
+
+df_netflix = pd.read_csv(chemin_netflix, sep=",")
+df_amazon_prime = pd.read_csv(chemin_amazon_prime, sep=",")
+df_disney_plus = pd.read_csv(chemin_disney_plus, sep=",")
+df_movies_rating = pd.read_csv(movies_rating, sep=",") #On convertis chacunes de nos bases de données en dataframe
+
+#Q1 PARTIE 1
+#Netflix a le plus de diversité geographique 
+
+geographie_netflix = df_netflix['country'].tolist()
+geographie_amazon_prime = df_amazon_prime['country'].tolist()
+geographie_disney_plus = df_disney_plus['country'].tolist() #On va s'interesser à l'effectif des pays 
+
+cleaned_geographie_netflix = [x for x in geographie_netflix if x == x]
+cleaned_geographie_amazon_prime = [x for x in geographie_amazon_prime if x == x]
+cleaned_geographie_disney_plus = [x for x in geographie_disney_plus if x == x] #Il est possible qu'il y ait des valeurs manquantes, on les supprime avec celà
+
+effectif_netflix = ['United-States', 'India', 'United-Kingdom','Japan', 'South-Korea', 'Canada', 'Spain', 'France', 'Others']
+effectif_amazon_prime = ['United-States','India', 'United-Kingdom', 'Canada', 'Others']
+effectif_disney_plus = ['United-States', 'Canada', 'United-Kingdom','United States & Canada', 'United States & United Kingdom',  'Others']
+
+a_netflix = len(cleaned_geographie_netflix) - (cleaned_geographie_netflix.count('United States') + cleaned_geographie_netflix.count('India')+cleaned_geographie_netflix.count('Japan') + cleaned_geographie_netflix.count('South Korea') + cleaned_geographie_netflix.count('Canada') + cleaned_geographie_netflix.count('Spain') + cleaned_geographie_netflix.count('France'))
+L_netflix = [cleaned_geographie_netflix.count('United States'), cleaned_geographie_netflix.count('India'), cleaned_geographie_netflix.count('United Kingdom'), cleaned_geographie_netflix.count('Japan'), cleaned_geographie_netflix.count('South Korea'), cleaned_geographie_netflix.count('Canada'), cleaned_geographie_netflix.count('Spain'), cleaned_geographie_netflix.count('France'), a_netflix]
+
+a_amazon_prime = len(cleaned_geographie_amazon_prime) - (cleaned_geographie_amazon_prime.count('United States') + cleaned_geographie_amazon_prime.count('India') + cleaned_geographie_amazon_prime.count('United Kingdom') + cleaned_geographie_amazon_prime.count('Canada'))
+L_amazon_prime = [cleaned_geographie_amazon_prime.count('United States'), cleaned_geographie_netflix.count('India'), cleaned_geographie_amazon_prime.count('United Kingdom'), cleaned_geographie_netflix.count('Canada'), a_amazon_prime]
+
+a_disney_plus = len(cleaned_geographie_disney_plus) - (cleaned_geographie_disney_plus.count('United States') + cleaned_geographie_disney_plus.count('Canada') + cleaned_geographie_disney_plus.count('United Kingdom') + cleaned_geographie_disney_plus.count('United States, Canada') + cleaned_geographie_disney_plus.count('United States, United Kingdom'))
+L_disney_plus = [cleaned_geographie_disney_plus.count('United States'), cleaned_geographie_disney_plus.count('Canada'), cleaned_geographie_disney_plus.count('United Kingdom'), cleaned_geographie_disney_plus.count('United States, Canada'), cleaned_geographie_disney_plus.count('United States, United Kingdom'), a_disney_plus]
+
+rp.tracer_en_camember_repartition_pays(L_netflix, effectif_netflix, 'Repartition Geographique du contenu Netflix')
+rp.tracer_en_camember_repartition_pays(L_amazon_prime, effectif_amazon_prime, 'Repartition Geographique du contenu Amazon Prime')
+rp.tracer_en_camember_repartition_pays(L_disney_plus, effectif_disney_plus, 'Repartition Geographique du contenu Disney Plus')
+
+#Q2 PARTIE 1
+#Q3 PARTIE 1
+
+
+L1 = df_netflix['listed_in'].tolist()
+L2 = df_amazon_prime['listed_in'].tolist()
+L3 = df_disney_plus['listed_in'].tolist()
+L = L1+L2+L3 #Les listes de genres selon les différentes plateformes
+
+#On fait d'abord de maniere general (c'est à dire, on ne distingue pas le cas série et le cas film)
+
+rp.representation_genre_graphe(L, 'pink', 'Representation sur les trois plateforme')
+rp.representation_genre_graphe(L1, 'red', 'Representation des genres sur Netflix')
+rp.representation_genre_graphe(L2, 'blue', 'Representation des genres sur Amazon Prime')
+rp.representation_genre_graphe(L3, 'purple', 'Representation des genres sur Disney Plus ')
+
+
+# Maintenant on fait en fonction serie / film
+#Sur Chacune des plateforme, on prend les genres selon le fait que ce soit un film, ou une serie, puis trace un histogramme 
+
+netflix_series = df_netflix.loc[df_netflix["type"] == 'TV Show', ["listed_in"]]['listed_in'].tolist()
+netflix_movies = df_netflix.loc[df_netflix["type"] == 'Movie', ["listed_in"]]['listed_in'].tolist()
+
+rp.representation_genre_graphe(netflix_series, 'pink','Representation des genres de series sur Netlix')
+rp.representation_genre_graphe(netflix_movies, 'red','Representation des genres des films sur Netflix ')
+
+amazon_prime_series = df_amazon_prime.loc[df_amazon_prime["type"] == 'TV Show', ["listed_in"]]['listed_in'].tolist()
+amazon_prime_movies = df_amazon_prime.loc[df_amazon_prime["type"] == 'Movie', ["listed_in"]]['listed_in'].tolist()
+
+rp.representation_genre_graphe(amazon_prime_series, 'pink','Representation des genres de series sur Amazon Prime')
+rp.representation_genre_graphe(amazon_prime_movies, 'red','Representation des genres des films sur Amazon Prime ')
+
+disney_plus_series = df_disney_plus.loc[df_disney_plus["type"] == 'TV Show', ["listed_in"]]['listed_in'].tolist()
+disney_plus_movies = df_disney_plus.loc[df_disney_plus["type"] == 'Movie', ["listed_in"]]['listed_in'].tolist()
+
+rp.representation_genre_graphe(disney_plus_series, 'pink', 'Representation des genres de series sur Disney + ')
+rp.representation_genre_graphe(disney_plus_movies, 'red', 'Representation des genres des films sur Disney + ')
+
+#Q4 PARTIE I
+
+
+merged_amazon_prime=pd.merge(df_amazon_prime,df_movies_rating,how='inner',on='title')
+merged_disney_plus=pd.merge(df_disney_plus,df_movies_rating,how='inner',on='title')
+merged_netflix=pd.merge(df_netflix,df_movies_rating,how='inner',on='title')
+#On prend les titres présent sur la plateforme et dans notre document movies_rating
+
+
+genres_netflix = merged_netflix['genre'].tolist()
+genres_amazon_prime = merged_amazon_prime['genre'].tolist()
+genres_disney_plus = merged_disney_plus['genre'].tolist()
+genres_toutes_plateforme = genres_netflix + genres_amazon_prime + genres_disney_plus
+
+rp.frequence_moyenne_par_genre(genres_netflix, 'Netflix') #Moyenne des 5 genres les plus représentés sur Netflix
+rp.frequence_moyenne_par_genre(genres_amazon_prime, 'Amazon Prime') #Moyenne des 5 genres les plus représentés sur Amazon Prime
+rp.frequence_moyenne_par_genre(genres_netflix, 'Disney Plus') #Moyenne des 5 genres les plus représentés sur Disney Plus
+
+rp.representation_par_moyenne_genre_graphe(genres_netflix, 'pink', 'Representation De la Moyenne des Genres les plus représentés sur Netflix', 'Netflix')
+rp.representation_par_moyenne_genre_graphe(genres_netflix, 'red', 'Representation De la Moyenne des Genres les plus représentés sur Amazon Prime', 'Amazon Prime')
+rp.representation_par_moyenne_genre_graphe(genres_disney_plus, 'blue', 'Representation De la Moyenne des Genres les plus représentés sur Disney Plus', 'Disney Plus')
+
